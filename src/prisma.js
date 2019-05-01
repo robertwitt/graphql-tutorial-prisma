@@ -5,33 +5,52 @@ const prisma = new Prisma({
     endpoint: 'http://localhost:4466'
 })
 
-// prisma.query.users(null, '{ id name posts { id title } }').then(data => console.log(JSON.stringify(data, undefined, 2)))
-// prisma.query.comments(null, '{ id text author { id name } }').then(data => console.log(JSON.stringify(data, undefined, 2)))
+const createPostForUser = async (authorID, data) => {
+    const post = await prisma.mutation.createPost({
+        data: {
+            ...data,
+            author: {
+                connect: {
+                    id: authorID
+                }
+            }
+        }
+    }, '{ id }')
 
-// prisma.mutation.createPost({
-//     data: {
-//         title: "GraphQL 101",
-//         body: "",
-//         published: false,
-//         author: {
-//             connect: {
-//                 id: "cjv51wxt600dn07185zxbuusj"
-//             }
-//         }
-//     }
-// }, '{ id title body published }').then(data => {
-//     console.log(data)
-//     return prisma.query.users(null, '{ id name posts { id title } }')
-// }).then(data => console.log(JSON.stringify(data, undefined, 2)))
+    const user = await prisma.query.user({
+        where: {
+            id: authorID
+        }
+    }, '{ id name email posts { id title published } }')
 
-prisma.mutation.updatePost({
-    where: {
-        id: "cjv5cnd7a00io0718iaiypufv"
-    },
-    data: {
-        body: "This is how to get started with GraphQL ...",
-        published: true
-    }
-}, '{ id body published }')
-    .then(() => prisma.query.posts(null, '{ id title body published }'))
-    .then(data => console.log(JSON.stringify(data, undefined, 2)))
+    return user
+}
+
+// createPostForUser('cjv5113yx002j0718417agycx', {
+//     title: 'Great books to read',
+//     body: 'The War of Art',
+//     published: true 
+// }).then(user => console.log(JSON.stringify(user, undefined, 2)))
+
+const updatePostForUser = async (postId, data) => {
+    const post = await prisma.mutation.updatePost({
+        where: {
+            id: postId
+        },
+        data: {
+            ...data
+        }
+    }, '{ author { id } }')
+
+    const user = await prisma.query.user({
+        where: {
+            id: post.author.id
+        }
+    }, '{ id name email }')
+
+    return user
+}
+
+// updatePostForUser('cjv5d9etr00kr0718uihc8ko8', {
+//     published: false 
+// }).then(user => console.log(JSON.stringify(user, undefined, 2)))
