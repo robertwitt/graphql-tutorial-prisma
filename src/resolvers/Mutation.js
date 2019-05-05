@@ -41,7 +41,7 @@ const Mutation = {
             token: jwt.sign({ userId: user.id }, 'thisisasecret')
         }
     },
-    async deleteUser(parent, args, { prisma, request }, info) {
+    deleteUser(parent, args, { prisma, request }, info) {
         const userId = getUserId(request)
         return prisma.mutation.deleteUser( { 
             where: {
@@ -49,7 +49,7 @@ const Mutation = {
             } 
         }, info)
     },
-    async updateUser(parent, args, { prisma, request }, info) {
+    updateUser(parent, args, { prisma, request }, info) {
         const userId = getUserId(request)
         return prisma.mutation.updateUser({
             where: {
@@ -58,7 +58,7 @@ const Mutation = {
             data: args.data
         }, info)
     },
-    async createPost(parent, args, { prisma, request }, info) {
+    createPost(parent, args, { prisma, request }, info) {
         const userId = getUserId(request)
         return prisma.mutation.createPost({ 
             data: {
@@ -105,6 +105,20 @@ const Mutation = {
             throw new Error('Unable to update post')
         }
 
+        const postPublished = await prisma.exists.Post({
+            id: args.id,
+            published: true
+        })
+        if (postPublished && args.data.published === false) {
+            await prisma.mutation.deleteManyComments({
+                where: {
+                    post: {
+                        id: args.id
+                    }
+                }
+            })
+        }
+
         return prisma.mutation.updatePost({
             where: {
                 id: args.id
@@ -114,6 +128,14 @@ const Mutation = {
     },
     async createComment(parent, args, { prisma, request }, info) {
         const userId = getUserId(request)
+
+        const postPublished = await prisma.exists.Post({
+            id: args.data.post,
+            published: true
+        })
+        if (!postPublished) {
+            throw new Error('Unable to find post')
+        }
 
         return prisma.mutation.createComment({
             data: {
