@@ -5,7 +5,8 @@ const Query = {
         const opArgs = {
             first: args.first,
             skip: args.skip,
-            after: args.after
+            after: args.after,
+            orderBy: args.orderBy
         }
         if (args.query) {
             opArgs.where = {
@@ -24,7 +25,8 @@ const Query = {
             },
             first: args.first,
             skip: args.skip,
-            after: args.after
+            after: args.after,
+            orderBy: args.orderBy
         }
         if (args.query) {
             opArgs.where.OR = [{
@@ -47,7 +49,8 @@ const Query = {
             },
             first: args.first,
             skip: args.skip,
-            after: args.after
+            after: args.after,
+            orderBy: args.orderBy
         }
         if (args.query) {
             opArgs.where.OR = [{
@@ -63,7 +66,8 @@ const Query = {
         return prisma.query.comments({
             first: args.first,
             skip: args.skip,
-            after: args.after
+            after: args.after,
+            orderBy: args.orderBy
         }, info)
     },
     me(parent, args, { prisma, request }, info) {
