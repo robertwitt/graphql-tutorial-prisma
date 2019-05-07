@@ -1,3 +1,4 @@
+import '@babel/polyfill'
 import { GraphQLServer, PubSub } from 'graphql-yoga'
 import db from './db'
 import { resolvers, fragmentReplacements } from './resolvers/index'
@@ -19,4 +20,4 @@ const server = new GraphQLServer({
     fragmentReplacements
 })
 
-server.start(() => console.log('This server is up!'))
+server.start({ port: process.env.PORT || 4000 }, () => console.log('This server is up!'))
